@@ -1,6 +1,0 @@
-[submodule "assets/flipperzero-protobuf"]
-	path = assets/flipperzero-protobuf
-	url = https://github.com/flipperdevices/flipperzero-protobuf.git
-[submodule "lib/nanopb"]
-	path = lib/nanopb
-	url = https://github.com/nanopb/nanopb.git
