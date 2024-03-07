@@ -31,13 +31,9 @@ static const char *TAG = "uart_events";
 #define UART_INIT_BAUD_RATE (9600UL)
 #define UART_BAUD_RATE (1843200UL)
 
-
-
 #define BUF_SIZE (1024)
 
 #define UART_ID UART_NUM_0
-#define UART_TX_PIN (GPIO_NUM_1)   // GPIO1 para TX
-#define UART_RX_PIN (GPIO_NUM_3)   // GPIO3 para RX
 
 #define EXPANSION_MODULE_TIMEOUT_MS (EXPANSION_PROTOCOL_TIMEOUT_MS - 50UL)
 #define EXPANSION_MODULE_STARTUP_DELAY_MS (250UL)
@@ -422,7 +418,6 @@ static void expansion_process_screen_streaming() {
 
     pb_release(&PB_Main_msg, &rpc_message);
 }
-
 static void uart_task(void* unused_arg) {
     // startup delay (skip potential module insertion interference)
     vTaskDelay(pdMS_TO_TICKS(EXPANSION_MODULE_STARTUP_DELAY_MS));
@@ -434,11 +429,10 @@ static void uart_task(void* unused_arg) {
     bool splash_screen_shown = false;
 
     while(true) {
-        // announce presence (one pulse high -> low)
         // reset baud rate to initial value
         Serial.updateBaudRate(UART_INIT_BAUD_RATE);
+        // announce presence (one pulse high -> low)
         Serial.write(0xF0);
-        
         // wait for host response
         if(!expansion_wait_ready()) continue;
         // negotiate baud rate
@@ -460,11 +454,9 @@ static void uart_task(void* unused_arg) {
         if(!expansion_start_screen_streaming()) continue;
         // process screen frame messages - returns only on error
         expansion_process_screen_streaming();
-        while(1);
     }
 }
 
 void uart_protocol_init(void) { 
-    disableCore0WDT();
     xTaskCreate(uart_task, "uart_task", 4 * 1024, NULL, 1, &uart_task_handle);
 }

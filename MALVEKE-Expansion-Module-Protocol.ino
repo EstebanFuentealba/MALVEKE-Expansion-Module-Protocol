@@ -3,8 +3,13 @@
 #include "uart.h"
 #include "bitmaps.h"
 
-// // #define RX_PIN 15  // Serial1 RX
-// // #define TX_PIN 14  // Serial1 TX
+#include <ESPAsyncWebServer.h>
+#include <AsyncTCP.h>
+#include <DNSServer.h>
+
+
+AsyncWebServer server(80);
+IPAddress _IP;
 
 void show_defaul_screen() {
     uint8_t* frame_buffer = (uint8_t*)calloc(FLIPPER_BITMAP_SIZE, sizeof(uint8_t));
@@ -14,13 +19,26 @@ void show_defaul_screen() {
     free(frame_buffer);
 }
 
+void handleRoot(AsyncWebServerRequest *request) {
+  request->send(200, "text/plain", "Hello from ESP32!");
+}
+void start_server() {
+    WiFi.softAP("malveke_flpr", "12345678");
+    _IP = WiFi.softAPIP();
+    // default ip: 192.168.0.1
+    // Configure route for streaming frames
+    server.on("/", HTTP_GET, handleRoot);
+    // Start the web server
+    server.begin();
+}
 void init_module(void) {
     frame_init();
-    // Serial1.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN); // Iniciar el puerto UART (Serial1) para la comunicación con el módulo de expansión
     uart_protocol_init();
 }
 
 void setup() {
+    disableCore0WDT();  
+    start_server();
     init_module();
     show_defaul_screen();
 }
